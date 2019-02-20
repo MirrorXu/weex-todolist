@@ -1,10 +1,6 @@
 <template>
 <div class="wrapper">
-    <div class="header">
-        <text class="icon" @click="goBack">&#xe8ef;</text>
-        <text class="title">新增事项</text>
-        <text class="icon">&#xe8c4;</text>
-    </div>
+    <navBar title="新建"> </navBar>
     <div class="body">
         <input type="text"  v-model="name" class="title-input" placeholder="请输入标题">
         <text class="divider"></text>
@@ -17,14 +13,18 @@
 </template>
 
 <script>
+import mixin from '@/mixins/index'
 import {getEntryUrl} from '@/utils'
 const modal = weex.requireModule('modal')
 const navigator = weex.requireModule('navigator')
 const storage = weex.requireModule('storage')
-export default {
-    name: 'App',
-    components: {
 
+import navBar from '@/components/navBar/navBar'
+export default {
+    name: 'add',
+    mixins:[mixin],
+    components: {
+        navBar
     },
     data() {
         return {
@@ -66,46 +66,29 @@ export default {
                     }
                 })
             })
-        },
-        goBack() {
-            navigator.pop({
-                animated: 'true'
-            })
         }
     },
     beforeCreate() {
-        const domModule = weex.requireModule('dom')
-        domModule.addRule('fontFace', {
-            'fontFamily': 'iconfont',
-            'src': "url('http://at.alicdn.com/t/font_1035077_f7lm0j9xsqp.ttf')"
-        })
     },
     created() {
+        modal.toast({
+            message:'add page created'
+        })
     }
 }
 </script>
 
-<style scoped>
+<style scoped lang='scss'>
+@import "@/style/color.scss";
 .icon {
     font-family: iconfont;
-    color: rgb(180, 130, 87);
+    color: $themeColor;
 }
 
 .wrapper {
     background-color: rgb(248, 248, 248);
 }
 
-.header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    height: 88px;
-    padding-left: 10px;
-    padding-right: 20px;
-    background-color: #ffffff;
-    border-bottom-width: 1px;
-    border-bottom-color: #ebebeb;
-}
 
 .body {
     margin-top: 50px;

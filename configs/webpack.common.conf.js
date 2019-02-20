@@ -48,7 +48,7 @@ const getNativeEntryFileContent = (entryPath, vueFilePath) => {
 App.el = '#root'
 new Vue(App)
 `;
-  
+
   return contents;
 }
 
@@ -56,11 +56,15 @@ new Vue(App)
 const getEntryFile = (dir) => {
   dir = dir || config.sourceDir;
   const entries = glob.sync(`${dir}/${config.entryFilter}`, config.entryFilterOptions);
+  // 看一下entries
+  console.log('【entries：】', entries);
   entries.forEach(entry => {
     const extname = path.extname(entry);
     const basename = entry.replace(`${dir}/`, '').replace(extname, '');
     const templatePathForWeb = path.join(vueWebTemp, basename + '.web.js');
     const templatePathForNative = path.join(vueWebTemp, basename + '.js');
+    console.log('templatePathForWeb:', templatePathForWeb);
+    console.log('templatePathForNative:', templatePathForNative);
     fs.outputFileSync(templatePathForWeb, getWebEntryFileContent(templatePathForWeb, entry));
     fs.outputFileSync(templatePathForNative, getNativeEntryFileContent(templatePathForNative, entry));
     webEntry[basename] = templatePathForWeb;
@@ -112,10 +116,13 @@ const plugins = [
 ];
 
 // Config for compile jsbundle for web.
+const webEntrys = Object.assign(webEntry, {
+  'vendor': [path.resolve('node_modules/phantom-limb/index.js')]
+})
+console.log('【webEntry:】', webEntrys);
+
 const webConfig = {
-  entry: Object.assign(webEntry, {
-    'vendor': [path.resolve('node_modules/phantom-limb/index.js')]
-  }),
+  entry: webEntrys,
   output: {
     path: helper.rootNode('./dist'),
     filename: '[name].web.js'
@@ -137,8 +144,7 @@ const webConfig = {
    */
   module: {
     // webpack 2.0 
-    rules: useEslint.concat([
-      {
+    rules: useEslint.concat([{
         test: /\.js$/,
         use: [{
           loader: 'babel-loader'
@@ -149,7 +155,10 @@ const webConfig = {
         test: /\.vue(\?[^?]+)?$/,
         use: [{
           loader: 'vue-loader',
-          options: Object.assign(vueLoaderConfig({useVue: true, usePostCSS: false}), {
+          options: Object.assign(vueLoaderConfig({
+            useVue: true,
+            usePostCSS: false
+          }), {
             /**
              * important! should use postTransformNode to add $processStyle for
              * inline style prefixing.
@@ -168,15 +177,13 @@ const webConfig = {
                 minPixelValue: 1.01
               })
             ],
-            compilerModules: [
-              {
-                postTransformNode: el => {
-                  // to convert vnode for weex components.
-                  require('weex-vue-precompiler')()(el)
-                }
+            compilerModules: [{
+              postTransformNode: el => {
+                // to convert vnode for weex components.
+                require('weex-vue-precompiler')()(el)
               }
-            ]
-            
+            }]
+
           })
         }],
         exclude: config.excludeModuleReg
@@ -191,6 +198,8 @@ const webConfig = {
   plugins: plugins
 };
 // Config for compile jsbundle for native.
+
+console.log('【weexEntry：】', weexEntry);
 const weexConfig = {
   entry: weexEntry,
   output: {
@@ -213,8 +222,7 @@ const weexConfig = {
    * See: http://webpack.github.io/docs/configuration.html#module
    */
   module: {
-    rules: [
-      {
+    rules: [{
         test: /\.js$/,
         use: [{
           loader: 'babel-loader'
@@ -225,7 +233,9 @@ const weexConfig = {
         test: /\.vue(\?[^?]+)?$/,
         use: [{
           loader: 'weex-loader',
-          options: vueLoaderConfig({useVue: false})
+          options: vueLoaderConfig({
+            useVue: false
+          })
         }],
         exclude: config.excludeModuleReg
       }
@@ -238,11 +248,11 @@ const weexConfig = {
    */
   plugins: plugins,
   /*
-  * Include polyfills or mocks for various node stuff
-  * Description: Node configuration
-  *
-  * See: https://webpack.github.io/docs/configuration.html#node
-  */
+   * Include polyfills or mocks for various node stuff
+   * Description: Node configuration
+   *
+   * See: https://webpack.github.io/docs/configuration.html#node
+   */
   node: config.nodeConfiguration
 };
 

@@ -1,17 +1,13 @@
 <template>
 <div class="wrapper" @viewappear="viewappear" @viewdisappear="viewdisappear">
-    <div class="header">
-        <text class="icon" @click="goBack">&#xe8ef;</text>
-        <text class="title">详情</text>
-        <text class="icon">&#xe8c4;</text>
-    </div>
+    <navBar title="详情"></navBar>
     <div class="body">
         <text  class="title-input">{{name}}</text>
         <text class="divider"></text>
-        <text class="content-input" placeholder="请输入内容">{{desc}}</text>
+        <text class="content-input">{{desc}}</text>
     </div>
     <div class="footer">
-        <text class="add-btn icon">&#xe8e1;</text>
+        <text class="del-btn icon">删除</text>
     </div>
 </div>
 </template>
@@ -20,6 +16,7 @@
 const modal = weex.requireModule('modal')
 const navigator = weex.requireModule('navigator')
 const storage = weex.requireModule('storage')
+import navBar from '@/components/navBar/navBar'
 export default {
     name: 'App',
     data() {
@@ -27,6 +24,9 @@ export default {
             name: '获取中...',
             desc: '获取中...'
         }
+    },
+    components:{
+        navBar
     },
     methods: {
         getStrorageItem(key) {
@@ -61,13 +61,6 @@ export default {
             })
         }
     },
-    beforeCreate() {
-        const domModule = weex.requireModule('dom')
-        domModule.addRule('fontFace', {
-            'fontFamily': 'iconfont',
-            'src': "url('http://at.alicdn.com/t/font_1035077_f7lm0j9xsqp.ttf')"
-        })
-    },
     created() {
         this.viewappear()
     }
@@ -75,7 +68,8 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@import '@/style/color.scss';
 .icon {
     font-family: iconfont;
 }
@@ -131,7 +125,7 @@ export default {
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    background-color: #fff;
+    background-color: $white;
     border-top-width: 1px;
     border-top-color: #eeeeee;
     position: absolute;
@@ -140,7 +134,7 @@ export default {
     bottom: 0;
 }
 
-.add-btn {
-    color: rgb(12, 118, 145);
+.del-btn{
+    color:$themeColor;
 }
 </style>

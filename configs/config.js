@@ -15,7 +15,9 @@ const config = {
   excludeModuleReg: /node_modules(?!(\/|\\).*(weex).*)/,
   // Filter for entry files
   // see: https://www.npmjs.com/package/glob#glob-primer
-  entryFilter: '**/*.vue',
+  // entryFilter: '**/*.vue',
+  // 自定义修改：设置只编译src目录下的.vue文件为入口文件
+  entryFilter: '*.vue',
   // Options for the filter
   // see: https://www.npmjs.com/package/glob#options
   entryFilterOptions: {},

@@ -1,11 +1,11 @@
-<style scoped>
+<style lang="scss" scoped>
+@import "@/style/color.scss";
+
 .icon {
     font-family: iconfont;
 }
 
 .wrapper {
-    /* justify-content: center;
-    align-items: center; */
     background-color: rgb(248, 248, 248);
 }
 
@@ -17,45 +17,20 @@
     font-weight: 800;
     padding-left: 20px;
     margin-bottom: 10px;
-    color: rgb(143, 10, 92);
-}
-
-.item-cell {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #fff;
-    height: 80px;
-    padding-left: 20px;
-    padding-right: 20px;
-}
-
-.cell-r {
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-.btn {
-    border-width: 1px;
-    border-radius: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-right: 10px;
-    font-size: 18px;
+    color: $themeColor;
 }
 
 .footer {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    background-color: #fff;
+    background-color: $white;
     border-top-width: 1px;
     border-top-color: #eeeeee;
     position: absolute;
     width: 750px;
     height: 100px;
-    bottom: 0;
+    bottom: 0px;
 }
 
 .add-btn {
@@ -64,37 +39,28 @@
     text-align: center;
     border-right-width: 1px;
     border-right-color: #f3f3f3;
+    color: $themeColor;
 }
 
 .clear-btn {
     flex: 1;
     font-size: 22px;
     text-align: center;
+    color: $themeColor;
 }
 </style>
 
 <template>
 <div class="wrapper" @viewappear="viewappear" @viewdisappear="viewdisappear">
+    <navBar title="备忘录" :leftShow="false" :rightShow="false"></navBar>
     <div class="body">
         <div class="item">
             <text class="item-title">待办事项</text>
-            <div class="item-cell" v-for="(item , index ) in todoEvents" :key="index" @click="onEventClick(item)">
-                <text class="label">{{item.name}}</text>
-                <div class="cell-r">
-                    <text class="btn" @click="onFinish(item , index)">完成</text>
-                    <text class="icon">&#xe8f1;</text>
-                </div>
-            </div>
+            <eventItem v-for="item in todoEvents" :key="item" :item="item" @onFinsh="onFinish"  @onEventClick="onEventClick" ></eventItem>
         </div>
         <div class="item">
             <text class="item-title">已办事项</text>
-            <div class="item-cell" v-for="(item , index) in doneEvents" :key="index" @click="onEventClick(item)">
-                <text class="label">{{item.name}}</text>
-                <div class="cell-r">
-                    <!-- <text class="btn">完成</text> -->
-                    <text class="icon">&#xe8f1;</text>
-                </div>
-            </div>
+            <eventItem v-for="item in doneEvents" :key="item" :item="item" :isFinish="true" @onEventClick="onEventClick"></eventItem>
         </div>
     </div>
     <div class="footer">
@@ -109,15 +75,19 @@ import {
     getEntryUrl
 } from '@/utils/index.js'
 console.log('getEntryUrl:', getEntryUrl)
-
+// 自定义组件
+import navBar from '@/components/navBar/navBar'
+import eventItem from '@/components/eventItem/eventItem'
+import mixin from '@/mixins/index'
 const modal = weex.requireModule('modal')
 const storage = weex.requireModule('storage')
 const navigator = weex.requireModule('navigator')
 export default {
     name: 'App',
+    mixins:[mixin],
     components: {
-        // HelloWorld,
-        // add
+        navBar,
+        eventItem
     },
     data() {
         return {
@@ -127,9 +97,22 @@ export default {
         }
     },
     methods: {
-        onFinish(event, index) {
-            this.todoEvents.splice(index, 1)
-            this.doneEvents.push(event)
+        testNativeClick(e) {
+            modal.toast({
+                message: JSON.stringify(e)
+            })
+        },
+        onFinish(e) {
+            console.log('onFinish:', e)
+            // this.todoEvents.splice(index, 1)
+            this.todoEvents = this.todoEvents.filter(item => {
+                if (item.name === e.name && item.desc === e.desc) {
+                    return false
+                } else {
+                    return true
+                }
+            })
+            this.doneEvents.push(e)
         },
         // page 事件
         async viewappear(e) {
@@ -230,13 +213,6 @@ export default {
             this.todoEvents = []
             this.doneEvents = []
         }
-    },
-    beforeCreate() {
-        const domModule = weex.requireModule('dom')
-        domModule.addRule('fontFace', {
-            'fontFamily': 'iconfont',
-            'src': "url('http://at.alicdn.com/t/font_1035077_f7lm0j9xsqp.ttf')"
-        })
     },
     async created() {
         const me = this
